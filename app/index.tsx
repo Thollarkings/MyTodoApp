@@ -109,7 +109,7 @@ export default function Index() {
             justifyContent: isDesktop ? 'space-between' : 'center',
             alignItems: 'center', 
             width: '100%',
-            marginBottom: isDesktop ? 0 : 12
+            marginBottom: isDesktop ? 0 : 11
           }}>
             <View style={{ 
               flexDirection: 'row',
