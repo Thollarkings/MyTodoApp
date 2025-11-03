@@ -47,13 +47,21 @@ export const TodoListSectionContainer = styled.View`
 `;
 
 export const FilterContainer = styled.View`
-  flex-direction: column;
+  flex-direction: column; /* Default for mobile */
   justify-content: space-between;
   align-items: center;
   padding: 16px;
   background-color: ${(props) => props.theme.colors.card};
   border-radius: 5px;
   margin-bottom: 20px;
+  width: 100%; /* Take full width by default */
+  align-self: center; /* Center it */
+
+  @media (min-width: 768px) {
+    flex-direction: row; /* Row on desktop */
+    width: 50%; /* 50% width on desktop */
+    padding-horizontal: 20px; /* Align with MainContentContainer */
+  }
 `;
 
 export const ItemsCounter = styled.Text`
