@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import styled from "styled-components/native";
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTheme } from "styled-components/native";
 
 const Container = styled.KeyboardAvoidingView`
   flex: 1;
@@ -20,6 +21,7 @@ const InnerContainer = styled.View`
   flex: 1;
   padding: 20px;
   padding-top: 60px;
+  background-color: ${(props) => props.theme.colors.background}; // Add this
 `;
 
 const Title = styled.Text`
@@ -36,13 +38,14 @@ const Input = styled.TextInput`
   padding: 14px;
   margin-bottom: 20px;
   font-size: 16px;
-  background-color: ${(props) => props.theme.colors.surface};
+  background-color: ${(props) => props.theme.colors.card}; // Use 'card' instead of 'surface'
   color: ${(props) => props.theme.colors.text};
   border-color: ${(props) => props.theme.colors.border};
 `;
 
 const TextArea = styled(Input)`
   text-align-vertical: top;
+  min-height: 100px; // Better for text areas
 `;
 
 const Button = styled.TouchableOpacity`
@@ -54,7 +57,7 @@ const Button = styled.TouchableOpacity`
 `;
 
 const ButtonText = styled.Text`
-  color: #fff;
+  color: ${(props) => props.theme.colors.background}; // Use theme background for contrast
   font-size: 18px;
   font-weight: 600;
 `;
@@ -65,7 +68,7 @@ const DatePickerButton = styled.TouchableOpacity`
   padding: 14px;
   margin-bottom: 20px;
   font-size: 16px;
-  background-color: ${(props) => props.theme.colors.surface};
+  background-color: ${(props) => props.theme.colors.card}; // Use 'card' instead of 'surface'
   border-color: ${(props) => props.theme.colors.border};
   justify-content: center;
 `;
@@ -74,11 +77,19 @@ const DatePickerText = styled.Text`
   color: ${(props) => props.theme.colors.text};
 `;
 
+const Label = styled.Text`
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: ${(props) => props.theme.colors.text};
+`;
+
 export default function EditTaskScreen() {
   const { task } = useLocalSearchParams();
   const [taskToEdit, setTaskToEdit] = useState(null);
   const updateTodo = useMutation(api.todos.updateTodo);
   const router = useRouter();
+  const theme = useTheme();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -116,7 +127,7 @@ export default function EditTaskScreen() {
         dueDate: date.toISOString().split('T')[0],
       });
       Alert.alert("Success", "Task updated successfully!");
-      router.back(); // Navigate back to home screen
+      router.back();
     } catch (error) {
       console.error("Failed to update task:", error);
       Alert.alert("Error", "Failed to update task. Please try again.");
@@ -136,20 +147,21 @@ export default function EditTaskScreen() {
 
         <Input
           placeholder="Task title *"
-          placeholderTextColor={(props) => props.theme.colors.textSecondary}
+          placeholderTextColor={theme.colors.textPrimary}
           value={title}
           onChangeText={setTitle}
         />
 
-        <TextArea
+        <Input
           placeholder="Description (optional)"
-          placeholderTextColor={(props) => props.theme.colors.textSecondary}
+          placeholderTextColor={theme.colors.textPrimary}
           value={description}
           onChangeText={setDescription}
           multiline
-          numberOfLines={3}
+          numberOfLines={4}
         />
 
+        <Label>Due Date</Label>
         <DatePickerButton onPress={() => setShowDatePicker(true)}>
           <DatePickerText>{date.toDateString()}</DatePickerText>
         </DatePickerButton>
@@ -172,4 +184,3 @@ export default function EditTaskScreen() {
     </Container>
   );
 }
-

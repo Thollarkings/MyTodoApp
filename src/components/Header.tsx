@@ -48,15 +48,14 @@ const ThemeToggle = styled.TouchableOpacity`
 `;
 
 const ThemeToggleText = styled.Text`
-  color: #fff;
+  color: ${(props) => props.theme.colors.text};
   font-weight: 600;
 `;
 
 interface HeaderProps {}
 
 export const Header = ({}: HeaderProps) => {
-  const { toggleTheme } = useAppTheme();
-  const theme = useTheme();
+  const { theme, toggleTheme } = useAppTheme();
   const { isDesktop } = useResponsiveProps();
 
   return (
@@ -68,7 +67,7 @@ export const Header = ({}: HeaderProps) => {
           <HeaderTitle>T O D O</HeaderTitle>
           <ThemeToggle onPress={toggleTheme}>
             <ThemeToggleText style={{ fontSize: 20 }}>
-              {theme.name === 'dark' ? '🌙' : '☀️'}
+              {theme === 'dark' ? '🌙' : '☀️'}
             </ThemeToggleText>
           </ThemeToggle>
         </TopRow>

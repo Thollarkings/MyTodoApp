@@ -130,7 +130,9 @@ export default function Index() {
               <ClearCompletedButtonText>Clear Completed</ClearCompletedButtonText>
             </ClearCompletedButton>
           </View>
+          <div style={{ marginTop: 12}}>
           <ItemsCounter>{activeTodoCount} items left</ItemsCounter>
+          </div>
         </FilterContainer>
       </MainContentContainer>
       <Footer />

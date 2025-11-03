@@ -3,8 +3,8 @@ export const darkTheme = {
     background: '#121212',
     text: '#FFFFFF',
     card: '#1E1E1E',
-    primary: '#BB86FC',
-    secondary: '#03DAC6',
+    primary: '#2E0854',
+    secondary: '#3710BD',
     border: '#2C2C2C',
     textSecondary: '#AAAAAA',
     success: '#4CAF50',
@@ -21,7 +21,7 @@ export const darkTheme = {
   },
   shadows: {
     small: {
-      shadowColor: '#000',
+      shadowColor: '#FFFFFF',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.3,
       shadowRadius: 4,
