@@ -1,8 +1,6 @@
 import styled from 'styled-components/native';
 import { Dimensions, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
 
-
-
 const screenWidth = Dimensions.get('window').width;
 
 export const Container = styled.View`
@@ -47,21 +45,18 @@ export const TodoListSectionContainer = styled.View`
 `;
 
 export const FilterContainer = styled.View`
-  flex-direction: column; /* Default for mobile */
+  flex-direction: ${screenWidth > 768 ? 'row' : 'column'};
   justify-content: space-between;
   align-items: center;
   padding: 16px;
   background-color: ${(props) => props.theme.colors.card};
   border-radius: 5px;
   margin-bottom: 20px;
-  width: 100%; /* Take full width by default */
-  align-self: center; /* Center it */
-
-  @media (min-width: 768px) {
-    flex-direction: row; /* Row on desktop */
-    width: 50%; /* 50% width on desktop */
-    padding-horizontal: 20px; /* Align with MainContentContainer */
-  }
+  width: ${screenWidth > 768 ? '50%' : '100%'};
+  align-self: center;
+  ${screenWidth > 768 && `
+    padding-horizontal: 20px;
+  `}
 `;
 
 export const ItemsCounter = styled.Text`
@@ -69,7 +64,7 @@ export const ItemsCounter = styled.Text`
   color: ${(props) => props.theme.colors.textSecondary};
 `;
 
-export const FilterButton = styled.TouchableOpacity<{ active: boolean }>`
+export const FilterButton = styled(TouchableOpacity).attrs((props: { active: boolean }) => props)`
   padding: 8px 12px;
   border-radius: 5px;
   border-width: 1px;
@@ -78,13 +73,13 @@ export const FilterButton = styled.TouchableOpacity<{ active: boolean }>`
   margin-horizontal: 4px;
 `;
 
-export const FilterButtonText = styled.Text<{ active: boolean }>`
+export const FilterButtonText = styled.Text.attrs((props: { active: boolean }) => props)`
   color: ${(props) => (props.active ? '#fff' : props.theme.colors.text)};
   font-weight: bold;
   font-size: 12px;
 `;
 
-export const ClearCompletedButton = styled.TouchableOpacity`
+export const ClearCompletedButton = styled(TouchableOpacity)`
   padding: 8px 12px;
   border-radius: 5px;
   background-color: ${(props) => props.theme.colors.secondary};
