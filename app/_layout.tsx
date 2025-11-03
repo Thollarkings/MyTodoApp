@@ -1,20 +1,26 @@
 import "../assets/styles/global.css";
-// app/_layout.tsx
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { Stack } from "expo-router";
 import { AppThemeProvider } from "../src/contexts/ThemeContext";
-import { Alert } from "react-native";
+import { Text } from "react-native";
 
 const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
-if (!convexUrl) {
-  Alert.alert("Convex URL Missing", "EXPO_PUBLIC_CONVEX_URL is not set in your environment variables.");
+
+let convex;
+if (convexUrl) {
+  convex = new ConvexReactClient(convexUrl, {
+    unsavedChangesWarning: false,
+  });
 }
 
-const convex = new ConvexReactClient(convexUrl!, {
-  unsavedChangesWarning: false,
-});
-
 export default function RootLayout() {
+  if (!convex) {
+    return (
+      <Text>
+        EXPO_PUBLIC_CONVEX_URL is not set. Please set it in your environment.
+      </Text>
+    );
+  }
   return (
     <ConvexProvider client={convex}>
       <AppThemeProvider>

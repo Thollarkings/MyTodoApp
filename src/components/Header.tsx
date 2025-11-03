@@ -1,12 +1,9 @@
 import React from 'react';
-import { Text, TouchableOpacity, TextInput, View, ImageBackground, Dimensions } from 'react-native';
+import { Text, TouchableOpacity, TextInput, View, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import styled, { useTheme } from 'styled-components/native';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
-import { useWindowDimensions } from 'react-native';
-
-const { width: screenWidth } = useWindowDimensions();
-const isDesktop = screenWidth > 768;
+import { useResponsiveProps } from '../hooks/useResponsiveProps';
 
 const HeaderContainer = styled(ImageBackground)`
   height: 325px; /* Increased height by 30% */
@@ -28,13 +25,11 @@ const GradientOverlay = styled(LinearGradient)`
   padding: 50px 20px 20px 20px;
 `;
 
-/* const screenWidth = Dimensions.get('window').width; */
-
 const TopRow = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  width: ${screenWidth < 768 ? '90%' : '50%'};
+  width: 100%;
   margin: 0 auto;
   padding-horizontal: 20px; /* Align with MainContentContainer */
 `;
@@ -57,30 +52,26 @@ const ThemeToggleText = styled.Text`
   font-weight: 600;
 `;
 
-interface HeaderProps {
-}
+interface HeaderProps {}
 
-export const Header = ({ }: HeaderProps) => {
+export const Header = ({}: HeaderProps) => {
   const { toggleTheme } = useAppTheme();
   const theme = useTheme();
+  const { isDesktop } = useResponsiveProps();
 
   return (
     <HeaderContainer source={require('../../assets/images/mountain.jpg')} resizeMode="cover">
       <GradientOverlay colors={['rgba(55, 16, 189, 0.7)', 'rgba(164, 35, 149, 0.7)']}>
-<TopRow style={{
-  display: 'flex', 
-  flexDirection: 'row', 
-  justifyContent: 'space-between', 
-  alignItems: 'center', 
-  width: isDesktop ? '50%' : '100%'
-}}>
-  <HeaderTitle>T O D O</HeaderTitle>
-  <ThemeToggle onPress={toggleTheme}>
-    <ThemeToggleText style={{ fontSize: 20 }}>
-      {theme.name === 'dark' ? '🌙' : '☀️'}
-    </ThemeToggleText>
-  </ThemeToggle>
-</TopRow>
+        <TopRow style={{
+          width: isDesktop ? '50%' : '90%'
+        }}>
+          <HeaderTitle>T O D O</HeaderTitle>
+          <ThemeToggle onPress={toggleTheme}>
+            <ThemeToggleText style={{ fontSize: 20 }}>
+              {theme.name === 'dark' ? '🌙' : '☀️'}
+            </ThemeToggleText>
+          </ThemeToggle>
+        </TopRow>
       </GradientOverlay>
     </HeaderContainer>
   );

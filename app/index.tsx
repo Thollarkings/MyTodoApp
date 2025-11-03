@@ -94,28 +94,43 @@ export default function Index() {
           width: '100%'
         }}>
           <View style={{ 
-            flexDirection: isDesktop ? 'row' : 'column', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            width: '100%',
-            marginBottom: isDesktop ? 0 : 12
-          }}>
-            <View style={{ flexDirection: 'row' }}>
-              <FilterButton active={filter === 'all'} onPress={() => handleFilterChange('all')}>
-                <FilterButtonText active={filter === 'all'}>All</FilterButtonText>
-              </FilterButton>
-              <FilterButton active={filter === 'active'} onPress={() => handleFilterChange('active')}>
-                <FilterButtonText active={filter === 'active'}>Active</FilterButtonText>
-              </FilterButton>
-              <FilterButton active={filter === 'completed'} onPress={() => handleFilterChange('completed')}>
-                <FilterButtonText active={filter === 'completed'}>Completed</FilterButtonText>
-              </FilterButton>
-            </View>
-            <ClearCompletedButton onPress={handleClearCompleted}>
-              <ClearCompletedButtonText>Clear Completed</ClearCompletedButtonText>
-            </ClearCompletedButton>
+  flexDirection: isDesktop ? 'row' : 'column', 
+  justifyContent: isDesktop ? 'space-between' : 'center',
+  alignItems: 'center', 
+  width: '100%',
+  marginBottom: isDesktop ? 0 : 12
+}}>
+            <View style={{ 
+  flexDirection: isDesktop ? 'row' : 'column', 
+  justifyContent: isDesktop ? 'space-between' : 'center',
+  alignItems: 'center', 
+  width: '100%',
+  marginBottom: isDesktop ? 0 : 12
+}}>
+  <View style={{ 
+    flexDirection: 'row',
+    flex: isDesktop ? 1 : undefined, // Take available space on desktop
+    justifyContent: isDesktop ? 'center' : 'center' // Center the buttons
+  }}>
+    <FilterButton active={filter === 'all'} onPress={() => handleFilterChange('all')}>
+      <FilterButtonText active={filter === 'all'}>All</FilterButtonText>
+    </FilterButton>
+    <FilterButton active={filter === 'active'} onPress={() => handleFilterChange('active')}>
+      <FilterButtonText active={filter === 'active'}>Active</FilterButtonText>
+    </FilterButton>
+    <FilterButton active={filter === 'completed'} onPress={() => handleFilterChange('completed')}>
+      <FilterButtonText active={filter === 'completed'}>Completed</FilterButtonText>
+    </FilterButton>
+      <ClearCompletedButton onPress={handleClearCompleted}>
+    <ClearCompletedButtonText>Clear Completed</ClearCompletedButtonText>
+  </ClearCompletedButton>
+  </View>
+</View>
+
           </View>
+          <div style={{ marginTop: isDesktop ? 10 : 12 }}>
           <ItemsCounter>{activeTodoCount} items left</ItemsCounter>
+          </div>
         </FilterContainer>
       </MainContentContainer>
       <Footer />
