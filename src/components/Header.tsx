@@ -3,6 +3,10 @@ import { Text, TouchableOpacity, TextInput, View, ImageBackground, Dimensions } 
 import { LinearGradient } from 'expo-linear-gradient';
 import styled, { useTheme } from 'styled-components/native';
 import { useTheme as useAppTheme } from '../contexts/ThemeContext';
+import { useWindowDimensions } from 'react-native';
+
+const { width: screenWidth } = useWindowDimensions();
+const isDesktop = screenWidth > 768;
 
 const HeaderContainer = styled(ImageBackground)`
   height: 325px; /* Increased height by 30% */
@@ -24,7 +28,7 @@ const GradientOverlay = styled(LinearGradient)`
   padding: 50px 20px 20px 20px;
 `;
 
-const screenWidth = Dimensions.get('window').width;
+/* const screenWidth = Dimensions.get('window').width; */
 
 const TopRow = styled.View`
   flex-direction: row;
@@ -63,11 +67,20 @@ export const Header = ({ }: HeaderProps) => {
   return (
     <HeaderContainer source={require('../../assets/images/mountain.jpg')} resizeMode="cover">
       <GradientOverlay colors={['rgba(55, 16, 189, 0.7)', 'rgba(164, 35, 149, 0.7)']}>
-        <TopRow>
-          <HeaderTitle>T O D O</HeaderTitle>
-          <ThemeToggle onPress={toggleTheme}>
-<ThemeToggleText style={{ fontSize: 20 }}>{theme.name === 'dark' ? '🌙' : '☀️'}</ThemeToggleText></ThemeToggle>
-        </TopRow>
+<TopRow style={{
+  display: 'flex', 
+  flexDirection: 'row', 
+  justifyContent: 'space-between', 
+  alignItems: 'center', 
+  width: isDesktop ? '50%' : '100%'
+}}>
+  <HeaderTitle>T O D O</HeaderTitle>
+  <ThemeToggle onPress={toggleTheme}>
+    <ThemeToggleText style={{ fontSize: 20 }}>
+      {theme.name === 'dark' ? '🌙' : '☀️'}
+    </ThemeToggleText>
+  </ThemeToggle>
+</TopRow>
       </GradientOverlay>
     </HeaderContainer>
   );

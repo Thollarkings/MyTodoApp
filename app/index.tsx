@@ -2,7 +2,7 @@
 import { api } from '@/src/convex/_generated/api';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation } from 'convex/react';
-import { ScrollView, Text, View, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import { ScrollView, Text, View, TouchableOpacity, SafeAreaView, Dimensions, useWindowDimensions } from 'react-native';
 import { TodoList } from '../src/components/TodoList';
 import { TodoInput } from '../src/components/TodoInput';
 import { Footer } from '../src/components/Footer';
@@ -21,15 +21,17 @@ import {
   Placeholder
 } from './_index.styles';
 
-import { useState, useLayoutEffect } from 'react';
-
-const screenWidth = Dimensions.get('window').width;
+import { useState, useLayoutEffect, useEffect } from 'react';
 
 export default function Index() {
   const tasks = useQuery(api.todos.getTodos);
   const createTodo = useMutation(api.todos.createTodo);
   const clearCompleted = useMutation(api.todos.clearCompleted);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  
+  // Use useWindowDimensions hook for responsive design
+  const { width: screenWidth } = useWindowDimensions();
+  const isDesktop = screenWidth > 768;
 
   const activeTodoCount = tasks?.filter((task) => !task.completed).length || 0;
 
@@ -51,17 +53,22 @@ export default function Index() {
     return matchesFilter();
   });
 
-
-
   return (
     <Container>
       <Header />
-      <MainContentContainer>
-        <InputSectionContainer>
+      <MainContentContainer style={{
+        maxWidth: isDesktop ? '50%' : '100%',
+        paddingHorizontal: isDesktop ? 20 : 16
+      }}>
+        <InputSectionContainer style={{
+          width: '100%'
+        }}>
           <TodoInput onAddTask={handleAddTask} />
         </InputSectionContainer>
         
-        <TodoListSectionContainer>
+        <TodoListSectionContainer style={{
+          width: '100%'
+        }}>
           {tasks === undefined ? (
             <Placeholder>Loading...</Placeholder>
           ) : filteredTasks?.length === 0 ? (
@@ -69,17 +76,30 @@ export default function Index() {
           ) : (
             <ScrollView 
               style={{ flex: 1 }}
-              contentContainerStyle={{ flexGrow: 1 }}
+              contentContainerStyle={{ 
+                flexGrow: 1,
+                minHeight: 200
+              }}
               showsVerticalScrollIndicator={true}
               bounces={true}
+              overScrollMode="never"
+              alwaysBounceVertical={false}
             >
               <TodoList todos={filteredTasks || []} />
             </ScrollView>
           )}          
         </TodoListSectionContainer>
         
-        <FilterContainer>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <FilterContainer style={{
+          width: '100%'
+        }}>
+          <View style={{ 
+            flexDirection: isDesktop ? 'row' : 'column', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            width: '100%',
+            marginBottom: isDesktop ? 0 : 12
+          }}>
             <View style={{ flexDirection: 'row' }}>
               <FilterButton active={filter === 'all'} onPress={() => handleFilterChange('all')}>
                 <FilterButtonText active={filter === 'all'}>All</FilterButtonText>

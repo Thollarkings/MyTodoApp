@@ -1,23 +1,24 @@
 import styled from 'styled-components/native';
-import { Dimensions, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
-
-
-
-const screenWidth = Dimensions.get('window').width;
+import { Dimensions, Text, View, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
 
 export const Container = styled.View`
   flex: 1;
   background-color: ${(props) => props.theme.colors.background};
   justify-content: space-between;
   width: 100%;
+  ${Platform.select({
+    web: `
+      min-height: 100vh;
+      height: 100%;
+    `
+  })}
 `;
 
 export const MainContentContainer = styled.View`
   flex: 1;
-  padding-horizontal: 20px;
   width: 100%;
   align-self: center;
-  max-width: ${screenWidth > 768 ? '50%' : '100%'};
+  align-items: center;
 `;
 
 export const InputSectionContainer = styled.View`
@@ -30,6 +31,12 @@ export const InputSectionContainer = styled.View`
   shadow-opacity: 0.1;
   shadow-radius: 4px;
   elevation: 3;
+  width: 100%;
+  ${Platform.select({
+    web: `
+      box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    `
+  })}
 `;
 
 export const TodoListSectionContainer = styled.View`
@@ -44,24 +51,28 @@ export const TodoListSectionContainer = styled.View`
   elevation: 3;
   margin-bottom: 20px;
   min-height: 200px;
+  width: 100%;
+  ${Platform.select({
+    web: `
+      box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    `
+  })}
 `;
 
 export const FilterContainer = styled.View`
-  flex-direction: column; /* Default for mobile */
   justify-content: space-between;
   align-items: center;
   padding: 16px;
   background-color: ${(props) => props.theme.colors.card};
   border-radius: 5px;
   margin-bottom: 20px;
-  width: 100%; /* Take full width by default */
-  align-self: center; /* Center it */
-
-  @media (min-width: 768px) {
-    flex-direction: row; /* Row on desktop */
-    width: 50%; /* 50% width on desktop */
-    padding-horizontal: 20px; /* Align with MainContentContainer */
-  }
+  width: 100%;
+  align-self: center;
+  ${Platform.select({
+    web: `
+      box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    `
+  })}
 `;
 
 export const ItemsCounter = styled.Text`
