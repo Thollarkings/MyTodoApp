@@ -1,10 +1,15 @@
 import styled from 'styled-components/native';
-import { Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
+import { Dimensions, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
+
+
+
+const screenWidth = Dimensions.get('window').width;
 
 export const Container = styled.View`
   flex: 1;
   background-color: ${(props) => props.theme.colors.background};
   justify-content: space-between;
+  width: 100%;
 `;
 
 export const MainContentContainer = styled.View`
@@ -12,12 +17,7 @@ export const MainContentContainer = styled.View`
   padding-horizontal: 20px;
   width: 100%;
   align-self: center;
-  max-width: 90%;
-
-  @media (min-width: 768px) {
-    max-width: 50%;
-    padding-horizontal: 0px;
-  }
+  max-width: ${screenWidth > 768 ? '50%' : '100%'};
 `;
 
 export const InputSectionContainer = styled.View`
@@ -54,10 +54,6 @@ export const FilterContainer = styled.View`
   background-color: ${(props) => props.theme.colors.card};
   border-radius: 5px;
   margin-bottom: 20px;
-
-  @media (min-width: 768px) {
-    flex-direction: row;
-  }
 `;
 
 export const ItemsCounter = styled.Text`
