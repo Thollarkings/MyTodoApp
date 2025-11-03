@@ -2,7 +2,7 @@
 import { api } from '@/src/convex/_generated/api';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation } from 'convex/react';
-import { ScrollView, Text, View, TouchableOpacity, SafeAreaView, useWindowDimensions, Dimensions } from 'react-native';
+import { ScrollView, Text, View, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
 import { TodoList } from '../src/components/TodoList';
 import { TodoInput } from '../src/components/TodoInput';
 import { Footer } from '../src/components/Footer';
@@ -21,15 +21,16 @@ import {
   Placeholder
 } from './_index.styles';
 
-import { useState, useEffect } from 'react'; // Added useEffect import
+import { useState, useLayoutEffect } from 'react';
+
+const screenWidth = Dimensions.get('window').width;
 
 export default function Index() {
   const tasks = useQuery(api.todos.getTodos);
   const createTodo = useMutation(api.todos.createTodo);
   const clearCompleted = useMutation(api.todos.clearCompleted);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
-  const { width } = useWindowDimensions();
-  
+
   const activeTodoCount = tasks?.filter((task) => !task.completed).length || 0;
 
   const handleAddTask = (title: string) => {
@@ -50,15 +51,7 @@ export default function Index() {
     return matchesFilter();
   });
 
-  // Fixed: Use useEffect instead of useState for event listener
-  const [_, forceUpdate] = useState(0);
-  
-  useEffect(() => { // Changed from useState to useEffect
-    const subscription = Dimensions.addEventListener('change', () => {
-      forceUpdate(n => n + 1);
-    });
-    return () => subscription?.remove();
-  }, []);
+
 
   return (
     <Container>
