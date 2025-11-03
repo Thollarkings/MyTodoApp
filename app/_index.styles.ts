@@ -12,6 +12,7 @@ export const MainContentContainer = styled.View`
   padding-horizontal: 20px;
   width: 100%;
   align-self: center;
+  max-width: 90%;
 
   @media (min-width: 768px) {
     max-width: 50%;
