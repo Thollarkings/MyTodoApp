@@ -44,6 +44,7 @@ export const TodoListSectionContainer = styled.View`
   min-height: 200px;
 `;
 
+// Fixed FilterContainer without media queries
 export const FilterContainer = styled.View`
   flex-direction: ${screenWidth > 768 ? 'row' : 'column'};
   justify-content: space-between;
@@ -73,7 +74,7 @@ export const FilterButton = styled(TouchableOpacity).attrs((props: { active: boo
   margin-horizontal: 4px;
 `;
 
-export const FilterButtonText = styled.Text.attrs((props: { active: boolean }) => props)`
+export const FilterButtonText = styled(Text).attrs((props: { active: boolean }) => props)`
   color: ${(props) => (props.active ? '#fff' : props.theme.colors.text)};
   font-weight: bold;
   font-size: 12px;
@@ -86,13 +87,13 @@ export const ClearCompletedButton = styled(TouchableOpacity)`
   margin-left: 8px;
 `;
 
-export const ClearCompletedButtonText = styled.Text`
+export const ClearCompletedButtonText = styled(Text)`
   color: #fff;
   font-weight: bold;
   font-size: 12px;
 `;
 
-export const Placeholder = styled.Text`
+export const Placeholder = styled(Text)`
   text-align: center;
   margin-top: 60px;
   font-size: 16px;
