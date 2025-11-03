@@ -1,5 +1,5 @@
 import styled from 'styled-components/native';
-import { Dimensions, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
+import { Dimensions, Text, TouchableOpacity } from 'react-native';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -44,7 +44,6 @@ export const TodoListSectionContainer = styled.View`
   min-height: 200px;
 `;
 
-// Fixed FilterContainer without media queries
 export const FilterContainer = styled.View`
   flex-direction: ${screenWidth > 768 ? 'row' : 'column'};
   justify-content: space-between;
