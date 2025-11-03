@@ -12,11 +12,11 @@ export const MainContentContainer = styled.View`
   padding-horizontal: 20px;
   width: 100%;
   align-self: center;
-  max-width: 90%;
+  max-width: 50%; // Default for larger screens
 
-  @media (min-width: 768px) {
-    max-width: 50%;
-    padding-horizontal: 0px;
+  @media (max-width: 767px) { // For screens narrower than 768px
+    max-width: 90%;
+    padding-horizontal: 0px; // Adjust padding for mobile
   }
 `;
 
