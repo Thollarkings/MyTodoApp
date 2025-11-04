@@ -6,9 +6,9 @@ import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 import { useResponsiveProps } from '../hooks/useResponsiveProps';
 
 const HeaderContainer = styled(ImageBackground)`
-  height: 325px; /* Increased height by 30% */
-  width: 100%; /* Ensure full width */
-  flex-direction: column; /* Changed to column for stacking elements */
+  height: 325px; 
+  width: 100%; 
+  flex-direction: column; 
   justify-content: space-between;
   align-items: center;
 `;
@@ -31,7 +31,7 @@ const TopRow = styled.View`
   align-items: center;
   width: 100%;
   margin: 0 auto;
-  padding-horizontal: 20px; /* Align with MainContentContainer */
+  padding-horizontal: 20px;
 `;
 
 const HeaderTitle = styled.Text`

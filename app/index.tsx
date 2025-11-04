@@ -23,35 +23,52 @@ import {
 
 import { useState, useLayoutEffect, useEffect } from 'react';
 
+/**
+ * The main screen of the application.
+ * It fetches todos from the database, manages the application's primary state,
+ * and renders the main layout and components.
+ */
 export default function Index() {
+  // Fetches all todos from the database, ordered by position.
   const tasks = useQuery(api.todos.getTodos);
   const createTodo = useMutation(api.todos.createTodo);
   const clearCompleted = useMutation(api.todos.clearCompleted);
+
+  // State for filtering the displayed todos.
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+
+  // Local state for todos to enable optimistic updates for drag-and-drop.
   const [localTasks, setLocalTasks] = useState(tasks);
 
+  // Effect to synchronize the local state with the data fetched from the database.
   useEffect(() => {
     setLocalTasks(tasks);
   }, [tasks]);
   
-  // Hooks must be called before any conditional returns
+  // Hooks for responsive design and ensuring client-side rendering.
   const { width: screenWidth } = useWindowDimensions();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // This ensures that the component only renders on the client-side,
+    // preventing hydration errors with responsive hooks.
     setIsClient(true);
   }, []);
 
+  // Avoid rendering on the server to prevent layout shifts.
   if (!isClient) {
     return <View style={{ flex: 1, backgroundColor: '#ffffff' }} />;
   }
   
-  // Now use the screenWidth after the client check
   const isDesktop = screenWidth > 768;
 
   const activeTodoCount = tasks?.filter((task) => !task.completed).length || 0;
 
+  /**
+   * Handles the creation of a new todo.
+   */
   const handleAddTask = (title: string) => {
+    // For this example, a static userId is used.
     const userId = "anonymous"; 
     createTodo({ title, userId });
   };
@@ -60,11 +77,12 @@ export default function Index() {
 
   const handleClearCompleted = () => clearCompleted();
 
+  // Apply the current filter to the local list of tasks.
   const filteredTasks = localTasks?.filter((task) => {
     const matchesFilter = () => {
       if (filter === 'active') return !task.completed;
       if (filter === 'completed') return task.completed;
-      return true;
+      return true; // 'all' filter
     };
     return matchesFilter();
   });

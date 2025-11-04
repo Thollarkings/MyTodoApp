@@ -48,13 +48,24 @@ interface TodoListProps {
   setTodos: (todos: Todo[]) => void;
 }
 
+/**
+ * Renders a draggable list of todo items.
+ * This component manages the list's state, including selection for batch operations
+ * and handling the drag-and-drop reordering logic.
+ */
 export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
   const updateTodo = useMutation(api.todos.updateTodo);
   const deleteTodo = useMutation(api.todos.deleteTodo);
   const reorderTodos = useMutation(api.todos.reorderTodos);
+
+  // State for managing which todos are selected for batch operations.
   const [selectedTodos, setSelectedTodos] = useState<Set<string>>(new Set());
+  // State to toggle the UI for batch actions.
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
+  /**
+   * Toggles the completion status of a single todo item.
+   */
   const handleToggle = (id: string) => {
     const todo = todos.find(t => t._id === id);
     if (todo) {
@@ -67,28 +78,31 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
     }
   };
 
+  /**
+   * Deletes a single todo item after confirmation.
+   */
   const handleDelete = async (id: string) => {
-    console.log("Attempting to delete todo with ID:", id);
     try {
       await deleteTodo({ id });
-      console.log("Todo deleted successfully:", id);
     } catch (error) {
       console.error("Error deleting todo:", id, error);
       Alert.alert("Deletion Error", "Failed to delete task. Please try again.");
     }
   };
 
+  /**
+   * Manages the selection of items. Entering selection mode when the first item is selected
+   * and exiting when the last item is deselected.
+   */
   const handleSelect = (id: string, selected: boolean) => {
     const newSelected = new Set(selectedTodos);
     if (selected) {
       newSelected.add(id);
-      
       if (!isSelectionMode) {
         setIsSelectionMode(true);
       }
     } else {
       newSelected.delete(id);
-      
       if (newSelected.size === 0) {
         setIsSelectionMode(false);
       }
@@ -96,8 +110,10 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
     setSelectedTodos(newSelected);
   };
 
+  /**
+   * Handles the batch deletion of all selected todos.
+   */
   const handleBatchDelete = () => {
-    console.log("handleBatchDelete called.");
     if (selectedTodos.size === 0) return;
 
     Alert.alert(
@@ -113,9 +129,10 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
                 await deleteTodo({ id });
               } catch (error) {
                 console.error(`Error deleting todo ${id}:`, error);
-                Alert.alert("Deletion Error", `Failed to delete task ${id}. Please try again.`);
+                // Optionally, inform the user about specific failures.
               }
             });
+            // Clear selection and exit selection mode after deletion.
             setSelectedTodos(new Set());
             setIsSelectionMode(false);
           },
@@ -125,26 +142,33 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
     );
   };
 
+  /**
+   * Callback for when a drag-and-drop operation concludes.
+   * It optimistically updates the UI and sends the new order to the backend.
+   */
   const handleDragEnd = async ({ data }: { data: Todo[] }) => {
+    // Optimistically update the parent component's state for a smooth user experience.
     setTodos(data);
     
     try {
+      // Map the new data to the format expected by the mutation.
       const updates = data.map((todo, index) => ({
         id: todo._id,
         position: index
       }));
       
+      // Asynchronously send the updates to the backend.
       await reorderTodos({ updates });
-      console.log("Todos reordered successfully");
     } catch (error) {
       console.error("Failed to reorder todos:", error);
       Alert.alert("Error", "Failed to reorder tasks. Please try again.");
+      // Note: A robust implementation might revert the optimistic update on failure.
     }
   };
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Selection Mode Header - Show when in selection mode */}
+      {/* The batch action bar is only visible when in selection mode. */}
       {isSelectionMode && (
         <BatchActionContainer>
           <BatchActionText>
@@ -158,11 +182,10 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
         </BatchActionContainer>
       )}
 
-      {/* Draggable Todo List */}
       <DraggableFlatList
-        data={todos}
+        data={todos} // The data for the list comes directly from the parent component.
         keyExtractor={(item) => item._id}
-        onDragEnd={handleDragEnd}
+        onDragEnd={handleDragEnd} // Callback to persist the new order.
         renderItem={({ item, drag, isActive }) => (
           <TodoItem
             key={item._id}
@@ -180,7 +203,7 @@ export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
           paddingBottom: 20,
           flexGrow: 1 
         }}
-        activationDistance={10}
+        activationDistance={10} // Makes it easier to initiate a drag.
         dragItemOverflow={false}
       />
     </View>

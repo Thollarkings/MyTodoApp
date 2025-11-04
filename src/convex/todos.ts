@@ -2,15 +2,22 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+/**
+ * Fetches all todos from the database, ordered by their position.
+ */
 export const getTodos = query({
   handler: async (ctx) => {
     return await ctx.db
       .query("todos")
-      .order("position")
+      .order("position") // Ensures todos are returned in the correct order for display
       .collect();
   },
 });
 
+/**
+ * Creates a new todo item.
+ * A new todo is always added to the end of the list.
+ */
 export const createTodo = mutation({
   args: {
     title: v.string(),
@@ -19,7 +26,7 @@ export const createTodo = mutation({
     userId: v.string(),
   },
   handler: async (ctx, args) => {
-    // Get the highest position to add new todo at the end
+    // Determine the position for the new todo by finding the current highest position.
     const todos = await ctx.db.query("todos").order("position").collect();
     const highestPosition = todos.length > 0 ? Math.max(...todos.map(t => t.position)) : 0;
     
@@ -31,11 +38,15 @@ export const createTodo = mutation({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       userId: args.userId,
-      position: highestPosition + 1,
+      position: highestPosition + 1, // Place the new todo at the end
     });
   },
 });
 
+/**
+ * Updates the position of a single todo item.
+ * This is used for drag-and-drop reordering.
+ */
 export const updateTodoPosition = mutation({
   args: {
     id: v.id("todos"),
@@ -49,6 +60,10 @@ export const updateTodoPosition = mutation({
   },
 });
 
+/**
+ * Atomically updates the positions of multiple todos in a single transaction.
+ * This is crucial for maintaining data integrity during drag-and-drop operations.
+ */
 export const reorderTodos = mutation({
   args: {
     updates: v.array(v.object({
@@ -57,7 +72,7 @@ export const reorderTodos = mutation({
     }))
   },
   handler: async (ctx, args) => {
-    // Update all positions in a transaction
+    // Use Promise.all to apply all updates concurrently for better performance.
     const updates = args.updates.map(update => 
       ctx.db.patch(update.id, { 
         position: update.position,
@@ -69,6 +84,9 @@ export const reorderTodos = mutation({
   },
 });
 
+/**
+ * Deletes a single todo item by its ID.
+ */
 export const deleteTodo = mutation({
   args: {
     id: v.id("todos"),
@@ -78,6 +96,9 @@ export const deleteTodo = mutation({
   },
 });
 
+/**
+ * Updates the content and completion status of a todo item.
+ */
 export const updateTodo = mutation({
   args: {
     id: v.id("todos"),
@@ -91,6 +112,9 @@ export const updateTodo = mutation({
   },
 });
 
+/**
+ * Removes all completed todos from the database.
+ */
 export const clearCompleted = mutation({
   handler: async (ctx) => {
     const completedTasks = await ctx.db

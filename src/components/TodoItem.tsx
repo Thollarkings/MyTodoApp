@@ -52,7 +52,7 @@ const DragHandleLine = styled.View`
   border-radius: 1px;
 `;
 
-// ... keep all your existing styled components (LeftContainer, RadioButton, Checkbox, etc.) ...
+
 
 const LeftContainer = styled.TouchableOpacity`
   flex-direction: row;
@@ -209,10 +209,15 @@ interface TodoItemProps {
   onDelete: (id: string) => void;
 }
 
+/**
+ * Represents a single todo item in the list.
+ * Handles its own state for editing and provides callbacks for parent-managed actions
+ * like selection, deletion, and toggling completion.
+ */
 export const TodoItem = ({
   item,
   drag,
-  isActive,
+  isActive, // Prop from DraggableFlatList indicating if the item is being dragged
   isSelectionMode,
   isSelected,
   onSelect,
@@ -222,18 +227,20 @@ export const TodoItem = ({
   const router = useRouter();
   const updateTodo = useMutation(api.todos.updateTodo);
 
+  // Internal state for managing the edit mode of the todo item.
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(item.title);
   const [editedDescription, setEditedDescription] = useState(item.description || '');
 
+  /**
+   * Prompts the user for confirmation before deleting the task.
+   */
   const handleDelete = (id: string) => {
-    console.log("handleDelete in TodoItem reached for ID:", id);
     Alert.alert('Delete Task', 'Are you sure you want to delete this task?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
         onPress: () => {
-          console.log("Alert confirmed, calling onDelete for ID:", id);
           onDelete(id);
         },
         style: 'destructive',
@@ -241,6 +248,9 @@ export const TodoItem = ({
     ]);
   };
 
+  /**
+   * Saves the edited title and description and exits edit mode.
+   */
   const handleSave = () => {
     updateTodo({
       id: item._id,
@@ -251,12 +261,19 @@ export const TodoItem = ({
     setIsEditing(false);
   };
 
+  /**
+   * Cancels the edit operation and reverts any changes.
+   */
   const handleCancel = () => {
     setEditedTitle(item.title);
     setEditedDescription(item.description || '');
     setIsEditing(false);
   };
 
+  /**
+   * Toggles the completion status of the todo.
+   * Includes a confirmation step if un-completing a task.
+   */
   const handleToggleCompleted = async () => {
     if (item.completed) {
       let confirmUndo = false;
@@ -293,16 +310,26 @@ export const TodoItem = ({
     }
   };
 
+  /**
+   * Handles presses on the task card itself.
+   * In selection mode, it toggles the selection state.
+   */
   const handleTaskPress = () => {
     if (isSelectionMode) {
       onSelect(item._id, !isSelected);
     }
   };
 
+  /**
+   * Handles presses on the radio button in selection mode.
+   */
   const handleRadioPress = () => {
     onSelect(item._id, !isSelected);
   };
 
+  /**
+   * Enters edit mode when the edit icon is pressed.
+   */
   const handleEditIconPress = () => {
     setIsEditing(true);
   };
@@ -313,12 +340,12 @@ export const TodoItem = ({
       isSelectionMode={isSelectionMode}
       isDragging={isActive}
     >
-      {/* Drag Handle - Only show when not in selection mode */}
+      {/* The drag handle is only visible when not in selection mode. */}
       {!isSelectionMode && (
         <DragHandle
-          onLongPress={drag}
-          delayLongPress={500}
-          onPressIn={drag}
+          onLongPress={drag} // Activates drag on long press
+          delayLongPress={200}
+          onPressIn={drag} // Allows immediate drag on press-in for better responsiveness
         >
           <DragHandleIcon>
             <DragHandleLine />
@@ -336,7 +363,7 @@ export const TodoItem = ({
           </EditIcon>
         </EditIconContainer>
 
-        {/* Show radio button in selection mode, checkbox in normal mode */}
+        {/* In selection mode, a radio button is shown. Otherwise, a checkbox is shown. */}
         {isSelectionMode ? (
           <RadioButton selected={isSelected} onPress={handleRadioPress}>
             {isSelected && <RadioInner />}
@@ -345,10 +372,12 @@ export const TodoItem = ({
           <Checkbox
             completed={item.completed}
             onPress={() => {
-              console.log("Checkbox pressed for ID:", item._id, "isSelectionMode:", isSelectionMode);
               if (!isSelectionMode) {
+                // If not in selection mode, pressing the checkbox initiates selection mode.
                 onSelect(item._id, true);
               } else {
+                // This case should ideally not be hit if the checkbox isn't shown in selection mode,
+                // but as a fallback, it toggles the item.
                 onToggle(item._id);
               }
             }}
@@ -393,7 +422,7 @@ export const TodoItem = ({
         </DoneButton>
       </LeftContainer>
 
-      {/* Show buttons only when not in selection mode and todo is selected AND not editing */}
+      {/* Action buttons are shown when an item is selected but not in selection mode or being edited. */}
       {!isSelectionMode && isSelected && !isEditing && (
         <ButtonContainer>
           <EditButton onPress={handleEditIconPress}>
@@ -405,7 +434,7 @@ export const TodoItem = ({
         </ButtonContainer>
       )}
 
-      {/* Show save/cancel buttons when editing */}
+      {/* Save and Cancel buttons are shown only during edit mode. */}
       {isEditing && (
         <ButtonContainer>
           <EditButton onPress={handleSave}>
