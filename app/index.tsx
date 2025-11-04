@@ -28,6 +28,11 @@ export default function Index() {
   const createTodo = useMutation(api.todos.createTodo);
   const clearCompleted = useMutation(api.todos.clearCompleted);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [localTasks, setLocalTasks] = useState(tasks);
+
+  useEffect(() => {
+    setLocalTasks(tasks);
+  }, [tasks]);
   
   // Hooks must be called before any conditional returns
   const { width: screenWidth } = useWindowDimensions();
@@ -55,7 +60,7 @@ export default function Index() {
 
   const handleClearCompleted = () => clearCompleted();
 
-  const filteredTasks = tasks?.filter((task) => {
+  const filteredTasks = localTasks?.filter((task) => {
     const matchesFilter = () => {
       if (filter === 'active') return !task.completed;
       if (filter === 'completed') return task.completed;
@@ -96,7 +101,7 @@ export default function Index() {
               overScrollMode="never"
               alwaysBounceVertical={false}
             >
-              <TodoList todos={filteredTasks || []} />
+              <TodoList todos={filteredTasks || []} setTodos={setLocalTasks} />
             </ScrollView>
           )}          
         </TodoListSectionContainer>

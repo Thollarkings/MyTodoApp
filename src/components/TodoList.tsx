@@ -1,6 +1,6 @@
-// src/components/TodoList.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Alert } from 'react-native';
+import DraggableFlatList from 'react-native-draggable-flatlist';
 import { TodoItem } from './TodoItem';
 import { useMutation } from 'convex/react';
 import { api } from '@/src/convex/_generated/api';
@@ -34,35 +34,24 @@ const BatchDeleteButtonText = styled.Text`
   font-size: 14px;
 `;
 
-const SelectionModeButton = styled.TouchableOpacity`
-  background-color: #3498db;
-  padding: 12px 20px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  align-self: flex-start;
-`;
-
-const SelectionModeButtonText = styled.Text`
-  color: #fff;
-  font-weight: bold;
-  font-size: 14px;
-`;
-
 interface Todo {
   _id: string;
   title: string;
   completed: boolean;
   userId: string;
   description?: string;
+  position: number;
 }
 
 interface TodoListProps {
   todos: Todo[];
+  setTodos: (todos: Todo[]) => void;
 }
 
-export const TodoList: React.FC<TodoListProps> = ({ todos }) => {
+export const TodoList: React.FC<TodoListProps> = ({ todos, setTodos }) => {
   const updateTodo = useMutation(api.todos.updateTodo);
   const deleteTodo = useMutation(api.todos.deleteTodo);
+  const reorderTodos = useMutation(api.todos.reorderTodos);
   const [selectedTodos, setSelectedTodos] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
@@ -94,14 +83,12 @@ export const TodoList: React.FC<TodoListProps> = ({ todos }) => {
     if (selected) {
       newSelected.add(id);
       
-      // Automatically enter selection mode when first todo is selected
       if (!isSelectionMode) {
         setIsSelectionMode(true);
       }
     } else {
       newSelected.delete(id);
       
-      // Automatically exit selection mode when no todos are selected
       if (newSelected.size === 0) {
         setIsSelectionMode(false);
       }
@@ -138,41 +125,64 @@ export const TodoList: React.FC<TodoListProps> = ({ todos }) => {
     );
   };
 
-  const handleCancelSelection = () => {
-    setSelectedTodos(new Set());
-    setIsSelectionMode(false);
+  const handleDragEnd = async ({ data }: { data: Todo[] }) => {
+    setTodos(data);
+    
+    try {
+      const updates = data.map((todo, index) => ({
+        id: todo._id,
+        position: index
+      }));
+      
+      await reorderTodos({ updates });
+      console.log("Todos reordered successfully");
+    } catch (error) {
+      console.error("Failed to reorder todos:", error);
+      Alert.alert("Error", "Failed to reorder tasks. Please try again.");
+    }
   };
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       {/* Selection Mode Header - Show when in selection mode */}
       {isSelectionMode && (
-                  <BatchActionContainer>
-                    <BatchActionText>
-                      {selectedTodos.size} task{selectedTodos.size > 1 ? 's' : ''} selected
-                    </BatchActionText>
-                    <BatchDeleteButton onPress={handleBatchDelete}>
-                      <BatchDeleteButtonText>
-                        Delete Selected
-                      </BatchDeleteButtonText>
-                    </BatchDeleteButton>
-                  </BatchActionContainer>
+        <BatchActionContainer>
+          <BatchActionText>
+            {selectedTodos.size} task{selectedTodos.size > 1 ? 's' : ''} selected
+          </BatchActionText>
+          <BatchDeleteButton onPress={handleBatchDelete}>
+            <BatchDeleteButtonText>
+              Delete Selected
+            </BatchDeleteButtonText>
+          </BatchDeleteButton>
+        </BatchActionContainer>
       )}
 
-      {/* Todo Items */}
-      {todos.map((todo) => (
-        <TodoItem
-          key={todo._id}
-          item={todo}
-          drag={() => {}} // You can keep your drag functionality
-          isActive={false}
-          isSelectionMode={isSelectionMode}
-          isSelected={selectedTodos.has(todo._id)}
-          onSelect={handleSelect}
-          onToggle={() => handleToggle(todo._id)}
-          onDelete={() => handleDelete(todo._id)}
-        />
-      ))}
+      {/* Draggable Todo List */}
+      <DraggableFlatList
+        data={todos}
+        keyExtractor={(item) => item._id}
+        onDragEnd={handleDragEnd}
+        renderItem={({ item, drag, isActive }) => (
+          <TodoItem
+            key={item._id}
+            item={item}
+            drag={drag}
+            isActive={isActive}
+            isSelectionMode={isSelectionMode}
+            isSelected={selectedTodos.has(item._id)}
+            onSelect={handleSelect}
+            onToggle={() => handleToggle(item._id)}
+            onDelete={() => handleDelete(item._id)}
+          />
+        )}
+        contentContainerStyle={{ 
+          paddingBottom: 20,
+          flexGrow: 1 
+        }}
+        activationDistance={10}
+        dragItemOverflow={false}
+      />
     </View>
   );
 };

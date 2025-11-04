@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { useMutation } from 'convex/react';
 import { api } from '@/src/convex/_generated/api';
 
-const TaskCard = styled.View<{ isSelected: boolean; isSelectionMode: boolean }>`
+const TaskCard = styled.View<{ isSelected: boolean; isSelectionMode: boolean; isDragging: boolean }>`
   padding: 16px;
   border-radius: 16px;
   margin-bottom: 16px;
@@ -13,21 +13,46 @@ const TaskCard = styled.View<{ isSelected: boolean; isSelectionMode: boolean }>`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  background-color: ${(props) => props.isSelected 
-    ? props.theme.colors.primary + '20' 
-    : props.theme.colors.card
-  };
-  border-color: ${(props) => props.isSelected 
-    ? props.theme.colors.primary 
-    : props.theme.colors.border
-  };
-  border-width: ${(props) => props.isSelected ? '2px' : '1px'};
+  background-color: ${(props) => {
+    if (props.isDragging) return props.theme.colors.primary + '20';
+    if (props.isSelected) return props.theme.colors.primary + '20';
+    return props.theme.colors.card;
+  }};
+  border-color: ${(props) => {
+    if (props.isDragging) return props.theme.colors.primary;
+    if (props.isSelected) return props.theme.colors.primary;
+    return props.theme.colors.border;
+  }};
+  border-width: ${(props) => (props.isDragging || props.isSelected) ? '2px' : '1px'};
   shadow-color: #000;
   shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 4;
-  elevation: 3;
+  shadow-opacity: ${(props) => props.isDragging ? 0.3 : 0.1};
+  shadow-radius: ${(props) => props.isDragging ? 8 : 4};
+  elevation: ${(props) => props.isDragging ? 8 : 3};
+  transform: ${(props) => props.isDragging ? 'scale(1.02)' : 'scale(1)'};
 `;
+
+const DragHandle = styled.TouchableOpacity`
+  padding: 12px 8px;
+  margin-right: 4px;
+  justify-content: center;
+  align-items: center;
+`;
+
+const DragHandleIcon = styled.View`
+  width: 16px;
+  height: 14px;
+  justify-content: space-between;
+`;
+
+const DragHandleLine = styled.View`
+  width: 100%;
+  height: 2px;
+  background-color: ${(props) => props.theme.colors.textSecondary};
+  border-radius: 1px;
+`;
+
+// ... keep all your existing styled components (LeftContainer, RadioButton, Checkbox, etc.) ...
 
 const LeftContainer = styled.TouchableOpacity`
   flex-direction: row;
@@ -184,12 +209,12 @@ interface TodoItemProps {
   onDelete: (id: string) => void;
 }
 
-export const TodoItem = ({ 
-  item, 
-  drag, 
-  isActive, 
-  isSelectionMode, 
-  isSelected, 
+export const TodoItem = ({
+  item,
+  drag,
+  isActive,
+  isSelectionMode,
+  isSelected,
   onSelect,
   onToggle,
   onDelete
@@ -217,8 +242,8 @@ export const TodoItem = ({
   };
 
   const handleSave = () => {
-    updateTodo({ 
-      id: item._id, 
+    updateTodo({
+      id: item._id,
       title: editedTitle,
       description: editedDescription,
       completed: item.completed
@@ -232,41 +257,42 @@ export const TodoItem = ({
     setIsEditing(false);
   };
 
-    const handleToggleCompleted = async () => {
-      if (item.completed) {
-        let confirmUndo = false;
-        if (Platform.OS === 'web') {
-          confirmUndo = window.confirm('Are you sure you want to mark this task as undone?');
-        } else {
-          confirmUndo = await new Promise<boolean>((resolve) => {
-            Alert.alert(
-              'Undo Task',
-              'Are you sure you want to mark this task as undone?',
-              [
-                { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-                { text: 'Undo', style: 'default', onPress: () => resolve(true) },
-              ]
-            );
-          });
-        }
-  
-        if (confirmUndo) {
-          updateTodo({
-            id: item._id,
-            title: item.title,
-            description: item.description,
-            completed: false
-          });
-        }
+  const handleToggleCompleted = async () => {
+    if (item.completed) {
+      let confirmUndo = false;
+      if (Platform.OS === 'web') {
+        confirmUndo = window.confirm('Are you sure you want to mark this task as undone?');
       } else {
+        confirmUndo = await new Promise<boolean>((resolve) => {
+          Alert.alert(
+            'Undo Task',
+            'Are you sure you want to mark this task as undone?',
+            [
+              { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+              { text: 'Undo', style: 'default', onPress: () => resolve(true) },
+            ]
+          );
+        });
+      }
+
+      if (confirmUndo) {
         updateTodo({
           id: item._id,
           title: item.title,
           description: item.description,
-          completed: true
+          completed: false
         });
       }
-    };
+    } else {
+      updateTodo({
+        id: item._id,
+        title: item.title,
+        description: item.description,
+        completed: true
+      });
+    }
+  };
+
   const handleTaskPress = () => {
     if (isSelectionMode) {
       onSelect(item._id, !isSelected);
@@ -282,79 +308,90 @@ export const TodoItem = ({
   };
 
   return (
-    <TaskCard 
-      style={isActive && { borderColor: 'blue', borderWidth: 2 }} 
-      isSelected={isSelected} 
+    <TaskCard
+      isSelected={isSelected}
       isSelectionMode={isSelectionMode}
+      isDragging={isActive}
     >
+      {/* Drag Handle - Only show when not in selection mode */}
+      {!isSelectionMode && (
+        <DragHandle
+          onLongPress={drag}
+          delayLongPress={500}
+          onPressIn={drag}
+        >
+          <DragHandleIcon>
+            <DragHandleLine />
+            <DragHandleLine />
+            <DragHandleLine />
+          </DragHandleIcon>
+        </DragHandle>
+      )}
+
       <LeftContainer onPress={handleTaskPress}>
-        {/* Edit Icon (replaced the three lines) */}
+        {/* Edit Icon */}
         <EditIconContainer onPress={handleEditIconPress}>
           <EditIcon>
             <EditIconTip />
           </EditIcon>
         </EditIconContainer>
-        
+
         {/* Show radio button in selection mode, checkbox in normal mode */}
         {isSelectionMode ? (
           <RadioButton selected={isSelected} onPress={handleRadioPress}>
             {isSelected && <RadioInner />}
           </RadioButton>
         ) : (
-          <Checkbox 
-            completed={item.completed} 
+          <Checkbox
+            completed={item.completed}
             onPress={() => {
-              console.log("Left Checkbox pressed");
               console.log("Checkbox pressed for ID:", item._id, "isSelectionMode:", isSelectionMode);
               if (!isSelectionMode) {
-                onSelect(item._id, true); // Select the item and initiate selection mode
+                onSelect(item._id, true);
               } else {
-                onToggle(item._id); // Toggle completion if already in selection mode (though this path shouldn't be hit if RadioButton is rendered)
+                onToggle(item._id);
               }
             }}
           >
             {item.completed && <CheckboxInner />}
           </Checkbox>
         )}
-        
-              <TaskContent onPress={handleTaskPress}>
-                <TaskTextContainer>
-                  {isEditing ? (
-                    <>
-                      <TextInput
-                        value={editedTitle}
-                        onChangeText={setEditedTitle}
-                        style={{ fontSize: 16, fontWeight: '600', color: '#000', marginBottom: 4, padding: 0 }}
-                        autoFocus
-                      />
-                      <TextInput
-                        value={editedDescription}
-                        onChangeText={setEditedDescription}
-                        style={{ fontSize: 14, color: '#888', padding: 0 }}
-                        multiline
-                        placeholder="Add description (optional)"
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <TaskTitle style={item.completed && { textDecorationLine: 'line-through', opacity: 0.7 }}>
-                        {item.title}
-                      </TaskTitle>
-                      {item.description ? (
-                        <TaskDescription>{item.description}</TaskDescription>
-                      ) : null}
-                    </>
-                  )}
-                </TaskTextContainer>
-              </TaskContent>
-        
-                                <DoneButton completed={item.completed} onPress={(e) => { e.stopPropagation(); handleToggleCompleted(); }}>
-        
-                                  <ButtonText>{item.completed ? 'Undo' : 'Done'}</ButtonText>
-        
-                                </DoneButton>      </LeftContainer>
 
+        <TaskContent onPress={handleTaskPress}>
+          <TaskTextContainer>
+            {isEditing ? (
+              <>
+                <TextInput
+                  value={editedTitle}
+                  onChangeText={setEditedTitle}
+                  style={{ fontSize: 16, fontWeight: '600', color: '#000', marginBottom: 4, padding: 0 }}
+                  autoFocus
+                />
+                <TextInput
+                  value={editedDescription}
+                  onChangeText={setEditedDescription}
+                  style={{ fontSize: 14, color: '#888', padding: 0 }}
+                  multiline
+                  placeholder="Add description (optional)"
+                />
+              </>
+            ) : (
+              <>
+                <TaskTitle style={item.completed && { textDecorationLine: 'line-through', opacity: 0.7 }}>
+                  {item.title}
+                </TaskTitle>
+                {item.description ? (
+                  <TaskDescription>{item.description}</TaskDescription>
+                ) : null}
+              </>
+            )}
+          </TaskTextContainer>
+        </TaskContent>
 
+        <DoneButton completed={item.completed} onPress={(e) => { e.stopPropagation(); handleToggleCompleted(); }}>
+          <ButtonText>{item.completed ? 'Undo' : 'Done'}</ButtonText>
+        </DoneButton>
+      </LeftContainer>
 
       {/* Show buttons only when not in selection mode and todo is selected AND not editing */}
       {!isSelectionMode && isSelected && !isEditing && (

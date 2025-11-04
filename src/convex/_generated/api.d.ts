@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as migrations from "../migrations.js";
 import type * as todos from "../todos.js";
 
 import type {
@@ -25,6 +26,7 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  migrations: typeof migrations;
   todos: typeof todos;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
